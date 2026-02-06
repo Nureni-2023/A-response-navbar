@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Navbar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease-in-out;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --nav-bg: rgba(0, 0, 0, 0.8);
+            --menu-bg: rgba(0, 0, 0, 0.9);
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --nav-bg: rgba(255, 255, 255, 0.1);
+            --menu-bg: rgba(255, 255, 255, 0.2);
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--nav-bg);
+            padding: 15px 20px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        .left-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .theme-toggle, .menu-toggle {
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+        .menu {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+        }
+        .menu li a {
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 10px;
+            border: 2px solid transparent;
+        }
+        .menu li a:hover {
+            border-bottom: 2px solid var(--text-color);
+        }
+        @media (max-width: 768px) {
+            .menu {
+                position: fixed;
+                top: 50%;
+                right: -50vw;
+                width: 50vw;
+                height: 90vh;
+                background: var(--menu-bg);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                transition: right 0.5s ease-in-out;
+                transform: translateY(-50%);
+            }
+            .menu.active {
+                right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="left-section">
+            <button class="menu-toggle" id="menuIcon">&#9776;</button>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+            <div class="logo">Brand</div>
+        </div>
+        <ul class="menu" id="menu">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Services</a></li>
+            <li><a href="#">Portfolio</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </nav>
+    <script>
+        const menuToggle = document.querySelector("#menuIcon");
+        const menu = document.querySelector("#menu");
+        const themeToggle = document.querySelector("#themeToggle");
+
+        menuToggle.addEventListener("click", () => {
+            menu.classList.toggle("active");
+            menuToggle.innerHTML = menu.classList.contains("active") ? "&#10006;" : "&#9776;";
+        });
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme);
+            themeToggle.innerHTML = newTheme === "dark" ? "🌞" : "🌙";
+        }
+
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+        themeToggle.innerHTML = savedTheme === "dark" ? "🌞" : "🌙";
+
+        themeToggle.addEventListener("click", toggleTheme);
+    </script>
+</body>
+</html>

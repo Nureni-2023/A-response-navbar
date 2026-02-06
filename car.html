@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Car Racing Game with 360° Steering Wheel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: sans-serif;
+    }
+
+    h1 { color: white; margin-bottom: 10px; }
+
+    #gameArea {
+      position: relative;
+      width: 300px;
+      height: 500px;
+      background: #444;
+      border: 3px solid white;
+      overflow: hidden;
+    }
+
+    .road-line {
+      position: absolute;
+      width: 10px;
+      height: 100px;
+      background: white;
+      left: 145px;
+      animation: roadMove 2s linear infinite;
+    }
+
+    @keyframes roadMove {
+      0% { top: -100px; }
+      100% { top: 500px; }
+    }
+
+    #playerCar {
+      position: absolute;
+      bottom: 20px;
+      left: 135px;
+      font-size: 30px;
+      color: red;
+      text-align: center;
+      width: 50px;
+      height: 90px;
+    }
+
+    .enemyCar {
+      position: absolute;
+      width: 50px;
+      height: 90px;
+      font-size: 30px;
+      color: yellow;
+      text-align: center;
+      top: -90px;
+    }
+
+    #scoreBoard {
+      margin-top: 10px;
+      color: white;
+      font-size: 18px;
+    }
+
+    #steeringWheel {
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, #ccc, #444);
+      border-radius: 50%;
+      border: 4px solid white;
+      margin-top: 20px;
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #steeringHandle {
+      width: 20px;
+      height: 10px;
+      background: white;
+      position: absolute;
+      top: 45%;
+      left: 45%;
+      border-radius: 5px;
+      transform-origin: center;
+      transition: transform 0.1s ease;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>Car Racing Game</h1>
+
+  <div id="gameArea">
+    <div class="road-line" style="top:0px;"></div>
+    <div class="road-line" style="top:150px;"></div>
+    <div class="road-line" style="top:300px;"></div>
+    <div class="road-line" style="top:450px;"></div>
+
+    <div id="playerCar">🚗</div>
+  </div>
+
+  <div id="scoreBoard">Score: 0</div>
+
+  <div id="steeringWheel">
+    <div id="steeringHandle"></div>
+  </div>
+
+  <script>
+    const gameArea = document.getElementById("gameArea");
+    const playerCar = document.getElementById("playerCar");
+    const scoreBoard = document.getElementById("scoreBoard");
+    const steeringWheel = document.getElementById("steeringWheel");
+    const steeringHandle = document.getElementById("steeringHandle");
+
+    let playerX = 135;
+    let score = 0;
+    let gameSpeed = 6;
+    let gameRunning = true;
+
+    function createEnemyCar() {
+      const car = document.createElement("div");
+      car.classList.add("enemyCar");
+      car.innerText = "🚗"; // Car emoji
+      car.style.left = Math.floor(Math.random() * 270) + "px";
+      gameArea.appendChild(car);
+    }
+
+    function moveEnemies() {
+      const enemies = document.querySelectorAll(".enemyCar");
+      enemies.forEach(enemy => {
+        const top = parseInt(enemy.style.top || "-60");
+        if (top > 500) {
+          enemy.remove();
+          score++;
+        } else {
+          enemy.style.top = top + gameSpeed + "px";
+
+          // Collision detection
+          if (
+            top + 90 > 440 &&
+            parseInt(enemy.style.left) < playerX + 50 &&
+            parseInt(enemy.style.left) + 50 > playerX
+          ) {
+            gameRunning = false;
+            alert("Game Over! Final Score: " + score);
+            location.reload();
+          }
+        }
+      });
+    }
+
+    function gameLoop() {
+      if (!gameRunning) return;
+      moveEnemies();
+      scoreBoard.textContent = "Score: " + score;
+      requestAnimationFrame(gameLoop);
+    }
+
+    function spawnEnemies() {
+      if (!gameRunning) return;
+      createEnemyCar();
+      setTimeout(spawnEnemies, 1000);
+    }
+
+    function moveCar(direction) {
+      if (direction === "left" && playerX > 0) {
+        playerX -= 20;
+      } else if (direction === "right" && playerX < 250) { // Adjusted to account for car width
+        playerX += 20;
+      }
+      playerCar.style.left = playerX + "px";
+    }
+
+    let isDragging = false;
+    let wheelCenterX = steeringWheel.offsetLeft + steeringWheel.offsetWidth / 2;
+    let wheelCenterY = steeringWheel.offsetTop + steeringWheel.offsetHeight / 2;
+
+    steeringWheel.addEventListener("mousedown", (e) => {
+      isDragging = true;
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+        document.removeEventListener("mousemove", onMouseMove);
+      });
+    });
+
+    function onMouseMove(e) {
+      if (!isDragging) return;
+
+      const dx = e.clientX - wheelCenterX;
+      const dy = e.clientY - wheelCenterY;
+
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      steeringHandle.style.transform = `rotate(${angle}deg)`;
+
+      // Move car based on wheel rotation
+      if (angle < -30) {
+        moveCar("left");
+      } else if (angle > 30) {
+        moveCar("right");
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (!gameRunning) return;
+      if (e.key === "ArrowLeft") moveCar("left");
+      else if (e.key === "ArrowRight") moveCar("right");
+    });
+
+    gameLoop();
+    spawnEnemies();
+  </script>
+</body>
+</html>

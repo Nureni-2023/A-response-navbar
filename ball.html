@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Animated Goalkeeper Game</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0b6623;
+      font-family: Arial, sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #gameArea {
+      position: relative;
+      width: 600px;
+      height: 300px;
+      background: #3a9c35;
+      border: 5px solid white;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #goal {
+      position: absolute;
+      left: 0;
+      width: 100px;
+      height: 100%;
+      border: 5px solid white;
+      background: repeating-linear-gradient(
+        to bottom,
+        #ffffff 0px,
+        #ffffff 2px,
+        transparent 2px,
+        transparent 10px
+      ),
+      repeating-linear-gradient(
+        to right,
+        #ffffff 0px,
+        #ffffff 2px,
+        transparent 2px,
+        transparent 10px
+      );
+      background-size: cover;
+      box-sizing: border-box;
+    }
+
+    #goalkeeper {
+      position: absolute;
+      width: 60px;
+      height: 120px;
+      left: 20px;
+      transition: top 0.3s ease, transform 0.3s ease;
+    }
+
+    .head {
+      width: 30px;
+      height: 30px;
+      background: #f1c27d;
+      border-radius: 50%;
+      margin: 0 auto;
+    }
+
+    .body {
+      width: 20px;
+      height: 50px;
+      background: red;
+      margin: 5px auto;
+    }
+
+    .arms {
+      position: absolute;
+      top: 35px;
+      width: 60px;
+      height: 10px;
+      background: red;
+      left: 0;
+    }
+
+    .legs {
+      position: absolute;
+      top: 100px;
+      width: 50px;
+      height: 10px;
+      background: red;
+      left: 5px;
+    }
+
+    #ball {
+      position: absolute;
+      bottom: 130px;
+      right: 20px;
+      width: 30px;
+      height: 30px;
+      background: white;
+      border-radius: 50%;
+      border: 2px solid black;
+      background-image: radial-gradient(circle, white 60%, black 60%);
+      background-size: 10px 10px;
+    }
+
+    #controls {
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+      background: #222;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #scoreboard {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+
+    /* Animations */
+    .dive-top {
+      transform: translateY(-50px) rotate(-20deg);
+    }
+
+    .dive-middle {
+      transform: translateX(0px) rotate(0deg);
+    }
+
+    .dive-bottom {
+      transform: translateY(50px) rotate(20deg);
+    }
+  </style>
+</head>
+<body>
+  <h1>Penalty Shootout (Animated Goalkeeper)</h1>
+  <div id="gameArea">
+    <div id="goal"></div>
+
+    <!-- Goalkeeper -->
+    <div id="goalkeeper">
+      <div class="head"></div>
+      <div class="body"></div>
+      <div class="arms"></div>
+      <div class="legs"></div>
+    </div>
+
+    <!-- Ball -->
+    <div id="ball"></div>
+  </div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button onclick="shoot('top')">Top</button>
+    <button onclick="shoot('middle')">Middle</button>
+    <button onclick="shoot('bottom')">Bottom</button>
+  </div>
+
+  <!-- Scoreboard -->
+  <div id="scoreboard">Score: 0 | Shots: 0</div>
+
+  <script>
+    let score = 0;
+    let shots = 0;
+    const keeper = document.getElementById("goalkeeper");
+    const ball = document.getElementById("ball");
+    const scoreboard = document.getElementById("scoreboard");
+
+    function getKeeperPosition() {
+      const positions = ['top', 'middle', 'bottom'];
+      return positions[Math.floor(Math.random() * 3)];
+    }
+
+    function moveKeeper(position) {
+      keeper.classList.remove("dive-top", "dive-middle", "dive-bottom");
+
+      if (position === 'top') {
+        keeper.style.top = '50px';
+        keeper.classList.add("dive-top");
+      } else if (position === 'middle') {
+        keeper.style.top = '100px';
+        keeper.classList.add("dive-middle");
+      } else {
+        keeper.style.top = '160px';
+        keeper.classList.add("dive-bottom");
+      }
+    }
+
+    function shoot(direction) {
+      const keeperPos = getKeeperPosition();
+      moveKeeper(keeperPos);
+
+      let ballTop;
+      if (direction === 'top') ballTop = 60;
+      else if (direction === 'middle') ballTop = 130;
+      else ballTop = 200;
+
+      ball.style.transition = 'all 0.5s ease-out';
+      ball.style.top = ballTop + 'px';
+      ball.style.right = '100px';
+
+      setTimeout(() => {
+        shots++;
+        if (keeperPos === direction) {
+          alert("Saved by the Keeper!");
+        } else {
+          score++;
+          alert("Goal!");
+        }
+
+        resetBall();
+        updateScoreboard();
+      }, 600);
+    }
+
+    function resetBall() {
+      ball.style.transition = 'none';
+      ball.style.top = '130px';
+      ball.style.right = '20px';
+    }
+
+    function updateScoreboard() {
+      scoreboard.textContent = `Score: ${score} | Shots: ${shots}`;
+    }
+  </script>
+</body>
+</html>

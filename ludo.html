@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Ludo Game</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+    #game-info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 24px;
+      color: white;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-info">Click to Roll Dice</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    let scene, camera, renderer, board, playerPieces, diceValue;
+    let clock = new THREE.Clock();
+
+    // Initialize the scene, camera, and renderer
+    function init() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Add a basic light
+      let light = new THREE.AmbientLight(0x404040); // Ambient light
+      scene.add(light);
+
+      // Create the board
+      createBoard();
+
+      // Create player pieces
+      playerPieces = createPlayerPieces();
+
+      // Position camera
+      camera.position.set(10, 10, 10);
+      camera.lookAt(0, 0, 0);
+
+      // Set up the dice roll click event
+      document.body.addEventListener('click', rollDice);
+
+      // Start animation loop
+      animate();
+    }
+
+    // Function to create the 3D Ludo board
+    function createBoard() {
+      let geometry = new THREE.BoxGeometry(1, 0.1, 1); // Flat grid blocks
+      let material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+      board = new THREE.Group();
+
+      // Generate grid of blocks
+      for (let x = -3; x <= 3; x++) {
+        for (let z = -3; z <= 3; z++) {
+          let block = new THREE.Mesh(geometry, material);
+          block.position.set(x, 0, z);
+          board.add(block);
+        }
+      }
+
+      scene.add(board);
+    }
+
+    // Function to create player pieces
+    function createPlayerPieces() {
+      let pieces = [];
+      let geometry = new THREE.SphereGeometry(0.2, 32, 32);
+      let material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+      // Create 4 player pieces
+      for (let i = 0; i < 4; i++) {
+        let piece = new THREE.Mesh(geometry, material);
+        piece.position.set(i * 2 - 3, 0.5, 3); // Arrange pieces on the board
+        pieces.push(piece);
+        scene.add(piece);
+      }
+
+      return pieces;
+    }
+
+    // Function to roll dice (simulate dice value)
+    function rollDice() {
+      diceValue = Math.floor(Math.random() * 6) + 1;
+      document.getElementById('game-info').innerHTML = `You rolled: ${diceValue}`;
+      movePlayer();
+    }
+
+    // Function to move player pieces based on dice roll
+    function movePlayer() {
+      // For simplicity, move only the first player piece
+      let piece = playerPieces[0];
+      let targetPosition = piece.position.x + diceValue * 0.5; // Move by dice value
+
+      // Animate piece moving
+      let moveAnimation = new THREE.AnimationClip("move", -1, [
+        new THREE.KeyframeTrack(".position[x]", [0, 2], [piece.position.x, targetPosition])
+      ]);
+      let mixer = new THREE.AnimationMixer(piece);
+      mixer.clipAction(moveAnimation).play();
+
+      // Update piece position
+      setTimeout(() => {
+        piece.position.x = targetPosition;
+      }, 1000);
+    }
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Update the scene
+      let delta = clock.getDelta();
+      renderer.render(scene, camera);
+    }
+
+    // Initialize the game
+    init();
+  </script>
+</body>
+</html>
